@@ -10,6 +10,7 @@ from pygame.locals import *
 from .data import *
 from .sprites import *
 from .level import *
+from array import *
 
 
 def RelRect(actor, camera):
@@ -80,6 +81,7 @@ class Game(object):
         self.hill2 = pygame.sprite.OrderedUpdates()
         self.bush2 = pygame.sprite.OrderedUpdates()
         self.bush3 = pygame.sprite.OrderedUpdates()
+        self.Array = [[]]
 
         Player.right_images = [load_image("mario1.png"), load_image("mario2.png"), load_image(
             "mario3.png"), load_image("mario4.png"), load_image("mario5.png")]
@@ -354,6 +356,7 @@ class Game(object):
             CannonShotbig.player = self.player
             CannonShotsmall.player = self.player
             SpikeShot.player = self.player
+        # Check Running
             if not self.running:
                 return
 
@@ -372,11 +375,17 @@ class Game(object):
 
             if self.player.rect.right > self.camera.world.w:
                 self.next_level()
+        # Populate Array for AI
+            self.Array = [[0 for i in range(self.level.y+1)] for j in range(self.level.x+1)] 
+            self.Array[int(self.player.rect[0]/32)][int(self.player.rect[1]/32)+1] = self.player.AIValue
 
-            self.player.collide(self.platforms)
-            self.player.collide(self.springs)
+            self.AddToAIArray(self.bricks)
+            self.AddToAIArray(self.platforms)
+            self.AddToAIArray(self.baddies)
 
-            # PROJECTILES:
+            # print(self.Array) 
+
+        # PROJECTILES:
 
             for f in self.firebowsers:
                 if self.player.rect.colliderect(f.rect):
@@ -421,7 +430,7 @@ class Game(object):
                         c.collide(self.springs)
                         c.collide(self.cannons)
 
-            # ENDING:
+        # ENDING:
 
             for b in self.bombs:
                 if self.player.rect.colliderect(b.rect):
@@ -452,29 +461,15 @@ class Game(object):
                 if self.booming and self.boom_timer <= 0:
                     self.redo_level()
 
-            # PLATFORMS:
-
-            for p in self.platforms:
-                self.player.collide(self.springs)
-                self.player.collide(self.platforms)
-
-            for m in self.mountains:
-                self.player.collide(self.mountains)
-
-            for p in self.platformblues:
-                self.player.collide(self.platformblues)
-
-            for b in self.brickblues:
-                self.player.collide(self.brickblues)
-
-            for g in self.grasss:
-                self.player.collide(self.grasss)
-
-            for b in self.bricks:
-                self.player.collide(self.bricks)
-
-            for l in self.grays:
-                self.player.collide(self.grays)
+        # PLATFORMS:
+            self.player.collide(self.springs)
+            self.player.collide(self.platforms)
+            self.player.collide(self.mountains)
+            self.player.collide(self.platformblues)            
+            self.player.collide(self.brickblues)
+            self.player.collide(self.grasss)
+            self.player.collide(self.bricks) 
+            self.player.collide(self.grays)
 
             for p in self.movingplatformtwos:
                 p.collide(self.players)
@@ -501,7 +496,7 @@ class Game(object):
                     self.score += 5000
                     self.lives += 1
 
-            # WALK THROUGH:
+        # WALK THROUGH:
 
             for a in self.axes:
                 if self.player.rect.colliderect(a.rect):
@@ -527,7 +522,7 @@ class Game(object):
                     self.coin -= self.coin
                     self.lives += 1
 
-            # BADDIES:
+        # BADDIES:
 
             for b in self.baddies:
                 b.collide(self.nomoveplatforms)
@@ -549,7 +544,7 @@ class Game(object):
                         if b.alive():
                             self.player.hit()
 
-            # TIMER:
+        # TIMER:
 
             if self.player.alive():
                 self.time -= 0.060
@@ -558,7 +553,7 @@ class Game(object):
             if self.time <= 100:
                 stop_music()
 
-            # EVENTS (KEYBINDINGS)
+        # EVENTS (KEYBINDINGS)
 
             for e in pygame.event.get():
                 if e.type == QUIT:
@@ -575,6 +570,7 @@ class Game(object):
             self.screen.blit(self.bg, ((-self.camera.rect.x/1) % 640 - 640, 0))
             self.camera.draw_sprites(self.screen, self.sprites)
             self.draw_stats()
+
             if not self.player.alive() and not self.playerdying:
                 if self.lives <= 0:
                     self.gameover_screen()
@@ -585,7 +581,7 @@ class Game(object):
             pygame.display.flip()
             if not self.running:
                 return
-
+    
     def draw_stats(self):
         for i in range(1):
             self.screen.blit(self.heart2, (16 + i*34, 16))
@@ -614,3 +610,8 @@ class Game(object):
         if self.time <= 100:
             ren = self.font.render("GOTTA GO FAST", 1, (255, 255, 255))
             self.screen.blit(ren, (630-ren.get_width(), 60))
+
+
+    def AddToAIArray(self, list):
+        for o in list:
+            self.Array[int(o.rect[0]/32)][int(o.rect[1]/32)] = o.AIValue
