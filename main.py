@@ -25,13 +25,22 @@ class Worker(object):
         
         net = neat.nn.FeedForwardNetwork.create(self.genome, self.config)
         
+        max_fitness = 0
         fitness = 0
         xpos = 0
         xpos_max = 0
         counter = 0
+
+        # cv2.namedWindow('main', cv2.WINDOW_NORMAL)
         
         while not done:
             # self.env.render()
+
+            # scaledimg = cv2.cvtColor(observation, cv2.COLOR_BGR2RGB)
+            # scaledimg = cv2.resize(scaledimg, (iny, inx))
+            # cv2.imshow('main', scaledimg)
+            # cv2.waitKey(1)
+
             observation = cv2.resize(observation, (inx, iny))
             observation = cv2.cvtColor(observation, cv2.COLOR_BGR2GRAY)
             observation = np.reshape(observation, (inx, iny))
@@ -41,21 +50,21 @@ class Worker(object):
             nnOutput = net.activate(imgarray)
 
             observation, reward, done, info = self.env.step(nnOutput.index(max(nnOutput)))
-            
-            xpos = info['x_pos']
 
-            if xpos > xpos_max:
-                xpos_max = xpos
+            fitness += int(reward)
+
+            if fitness > max_fitness:
+                max_fitness = fitness
                 counter = 0
-                fitness += 1
             else:
                 counter += 1
                 
-            if counter > 250:
+            if done or counter > 350 or info['life'] < 2:
                 done = True
+                fitness += info['score']
                 
             if info['flag_get']:
-                fitness_current += 100000
+                fitness += 100000
 
         return fitness
 
@@ -70,6 +79,7 @@ if __name__ == '__main__':
                         'config-feedforward')
 
     p = neat.Population(config)
+    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-629')
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
