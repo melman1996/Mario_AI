@@ -1,7 +1,8 @@
 Custom ignores:
 .vscode/
-
-
+neat-checkpoint-*
+results.txt
+.vs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
