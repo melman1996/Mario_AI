@@ -16,7 +16,11 @@ if __name__ == '__main__':
     episodes = 10000
     rewards = []
 
-    for e in range(episodes):
+    starting_episode = 0
+    if starting_episode > 0:
+        agent.load_model(starting_episode)
+
+    for e in range(starting_episode, episodes):
         total_reward = 0
         iter = 0
 
@@ -57,4 +61,6 @@ if __name__ == '__main__':
                     r=total_reward
                 )
         )
+        if e % 10 == 0:
+            agent.save_model(e)
         

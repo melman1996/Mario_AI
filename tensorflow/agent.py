@@ -21,6 +21,7 @@ class Agent:
         self.batch_size = 32
 
         self.memory = deque(maxlen=max_memory)
+        self.burnin = max_memory
 
         self.model = self.build_model()
         self.target_model = self.build_model()
@@ -60,7 +61,7 @@ class Agent:
         self.memory.append(experience)
 
     def experience_reply(self):
-        if self.batch_size > len(self.memory):
+        if self.batch_size > len(self.memory) or len(self.memory) < self.burnin:
             return
         
         batch = random.sample(self.memory, self.batch_size)
@@ -85,3 +86,11 @@ class Agent:
     def update_target_network(self):
         self.target_model = tf.keras.models.clone_model(self.model)
         self.target_model.set_weights(self.model.get_weights())
+
+    def save_model(self, episode):
+        self.model.save("models/e_{}/online".format(episode))
+        self.target_model.save("models/e_{}/target".format(episode))
+
+    def load_model(self, episode):
+        self.model = tf.keras.models.load_model("models/e_{}/online".format(episode))
+        self.target_model = tf.keras.models.load_model("models/e_{}/target".format(episode))
