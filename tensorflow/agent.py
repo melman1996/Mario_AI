@@ -62,11 +62,11 @@ class Agent:
     def experience_reply(self):
         if self.batch_size > len(self.memory):
             return
-
+        
         batch = random.sample(self.memory, self.batch_size)
         state, next_state, action, reward, done = map(np.array, zip(*batch))
 
-        target = self.model.predict(state)
+        target = self.model(state).numpy()
         target_next = self.target_model(next_state)
 
         for i in range(self.batch_size):
@@ -74,7 +74,7 @@ class Agent:
                 target[i][action[i]] = reward[i]
             else:
                 target[i][action[i]] = reward[i] + self.gamma * (np.amax(target_next[i]))
-
+        
         self.model.fit(
             np.array(state),
             np.array(target),
