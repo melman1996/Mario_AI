@@ -61,6 +61,6 @@ if __name__ == '__main__':
                     r=total_reward
                 )
         )
-        if e % 10 == 0:
+        if e % 100 == 0:
             agent.save_model(e)
         
