@@ -93,7 +93,7 @@ if __name__ == '__main__':
                         'config-feedforward')
 
     p = neat.Population(config)
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-59')
+    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-1179')
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(FileReporter())
     p.add_reporter(neat.Checkpointer(10))
