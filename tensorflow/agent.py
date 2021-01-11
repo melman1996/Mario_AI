@@ -67,7 +67,7 @@ class Agent:
         self.memory.append(experience)
 
     def experience_reply(self):
-        if self.batch_size > len(self.memory):
+        if self.batch_size > len(self.memory) or len(self.memory) < self.burnin:
             return
         
         batch = random.sample(self.memory, self.batch_size)
