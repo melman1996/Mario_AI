@@ -21,7 +21,7 @@ class Agent:
         self.batch_size = 32
 
         self.memory = deque(maxlen=max_memory)
-        self.burnin = max_memory
+        self.burnin = 100000
 
         self.model = self.build_model()
         self.target_model = self.build_model()
@@ -57,28 +57,31 @@ class Agent:
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
         return action
 
+    def replay(self, state):
+        state = np.reshape(state, (1, ) + self.env.observation_space.shape)
+        prediction = self.target_model.predict(state)[0]
+        print(prediction)
+        return np.argmax(prediction)
+
     def remember(self, experience):
         self.memory.append(experience)
 
     def experience_reply(self):
-        if self.batch_size > len(self.memory) or len(self.memory) < self.burnin:
+        if self.batch_size > len(self.memory):
             return
         
         batch = random.sample(self.memory, self.batch_size)
         state, next_state, action, reward, done = map(np.array, zip(*batch))
 
-        target = self.model(state).numpy()
-        target_next = self.target_model(next_state)
+        q = self.model(state).numpy()
+        next_q = self.target_model(next_state).numpy()
 
-        for i in range(self.batch_size):
-            if done[i]:
-                target[i][action[i]] = reward[i]
-            else:
-                target[i][action[i]] = reward[i] + self.gamma * (np.amax(target_next[i]))
+        a = np.argmax(q, axis=1)
+        target_q = reward + (1. - done) * self.gamma * next_q[np.arange(0, self.batch_size), a]
         
         self.model.fit(
             np.array(state),
-            np.array(target),
+            np.array(target_q),
             batch_size = self.batch_size,
             verbose = 0
         )

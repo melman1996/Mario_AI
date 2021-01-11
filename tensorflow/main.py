@@ -11,7 +11,7 @@ if __name__ == '__main__':
     env = JoypadSpace(env, RIGHT_ONLY)
     env = wrapper(env)
 
-    agent = Agent(env, max_memory=20000)
+    agent = Agent(env, max_memory=100000)
     
     episodes = 10000
     rewards = []
