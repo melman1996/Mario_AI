@@ -44,7 +44,7 @@ class Worker(object):
         self.env = gym_super_mario_bros.make('SuperMarioBros-v3')
         self.env = JoypadSpace(self.env, RIGHT_ONLY)        
         self.env.reset()        
-        observation, _, _, _ = self.env.step(self.env.action_space.sample())        
+        observation, _, _, _ = self.env.step(self.env.action_space.sample()) 
         # inx = int(observation.shape[0]/8)
         # iny = int(observation.shape[1]/8)
         done = False        
@@ -60,8 +60,10 @@ class Worker(object):
             # cv2.imshow('main', observation)
 
             observation = cv2.resize(observation, (self.w, self.h))
+            # observation = cv2.resize(observation, (inx,iny))
             observation = cv2.cvtColor(observation, cv2.COLOR_BGR2GRAY)
-            observation = np.reshape(observation, (self.w, self.h))
+            # observation = cv2.resize(observation, (inx, iny))
+            observation = cv2.resize(observation, (self.w, self.h))
 
             imgarray = np.ndarray.flatten(observation)
             imgarray = np.interp(imgarray, (0, 254), (-1, +1))
@@ -88,12 +90,13 @@ def eval_genomes(genome, config):
     return worky.work()
 
 if __name__ == '__main__':
+    
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, 
                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
                         'config-feedforward')
-
     p = neat.Population(config)
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-1179')
+    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-55')
+    p.config = config
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(FileReporter())
     p.add_reporter(neat.Checkpointer(10))
