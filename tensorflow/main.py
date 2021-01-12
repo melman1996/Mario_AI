@@ -43,6 +43,8 @@ if __name__ == '__main__':
 
             total_reward += reward
 
+            state = next_state
+
             iter += 1
 
             if done or info['flag_get']:
