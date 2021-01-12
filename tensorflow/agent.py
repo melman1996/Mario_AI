@@ -13,7 +13,7 @@ class Agent:
         self.learning_rate = 0.00025
 
         self.epsilon = 1 #chance to take random action
-        self.epsilon_decay = 0.9999
+        self.epsilon_decay = 0.99999975
         self.epsilon_min = 0.01
         
         self.gamma = 0.90
