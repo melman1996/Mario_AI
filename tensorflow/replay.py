@@ -2,19 +2,19 @@ import gym_super_mario_bros
 from nes_py.wrappers import JoypadSpace
 from wrappers import wrapper
 from agent import Agent
-from gym_super_mario_bros.actions import RIGHT_ONLY
+from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
 import numpy as np
 import time
 
 if __name__ == '__main__':
     env = gym_super_mario_bros.make('SuperMarioBros-v0')
-    env = JoypadSpace(env, RIGHT_ONLY)
+    env = JoypadSpace(env, SIMPLE_MOVEMENT)
     env = wrapper(env)
 
-    agent = Agent(env, max_memory=20000)
+    agent = Agent(env, max_memory=30000)
     
 
-    agent.load_model(100)
+    agent.load_model(500)
 
     state = env.reset()
     start = time.time()
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
         action = agent.replay(state)
 
-        next_state, reward, done, info = env.step(action)
+        state, reward, done, info = env.step(action)
 
         if done or info['flag_get']:
             break
