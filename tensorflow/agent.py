@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 from collections import deque
 import random
@@ -45,8 +46,13 @@ class Agent:
         model.add(tf.keras.layers.Dense(
             self.action_size, activation='softmax'
         ))
-        model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
+        model.compile(loss=self._huber_loss, optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
         return model
+
+    def _huber_loss(self, target, prediction):
+        # sqrt(1+error^2)-1
+        error = prediction - target
+        return K.mean(K.sqrt(1+K.square(error))-1, axis=-1)
 
     def run(self, state):
         if random.uniform(0, 1) < self.epsilon:
@@ -94,6 +100,6 @@ class Agent:
         self.model.save("models/e_{}/online".format(episode))
         self.target_model.save("models/e_{}/target".format(episode))
 
-    def load_model(self, episode):
-        self.model = tf.keras.models.load_model("models/e_{}/online".format(episode))
-        self.target_model = tf.keras.models.load_model("models/e_{}/target".format(episode))
+    def load_model(self, episode, compile=False):
+        self.model = tf.keras.models.load_model("models/e_{}/online".format(episode), compile=compile)
+        self.target_model = tf.keras.models.load_model("models/e_{}/target".format(episode), compile=compile)
