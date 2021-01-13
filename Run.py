@@ -41,7 +41,7 @@ if __name__ == '__main__':
                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
                         'config-feedforward')
     p = neat.Population(config)
-    with open(r"./winners/winner 2k.pkl", "rb") as input_file:
+    with open(r"./neat-checkpoint-309-bestGenome.pkl", "rb") as input_file:
         bestGenome = pickle.load(input_file)
     player = Player(bestGenome, config)
     player.play()
