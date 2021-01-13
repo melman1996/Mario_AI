@@ -46,13 +46,8 @@ class Agent:
         model.add(tf.keras.layers.Dense(
             self.action_size, activation='softmax'
         ))
-        model.compile(loss=self._huber_loss, optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
+        model.compile(loss=tf.keras.losses.Huber(), optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
         return model
-
-    def _huber_loss(self, target, prediction):
-        # sqrt(1+error^2)-1
-        error = prediction - target
-        return K.mean(K.sqrt(1+K.square(error))-1, axis=-1)
 
     def run(self, state):
         if random.uniform(0, 1) < self.epsilon:
