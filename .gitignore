@@ -1,6 +1,6 @@
 Custom ignores:
 .vscode/
-neat-checkpoint-*
+./neat-checkpoint-*
 results.txt
 .vs
 

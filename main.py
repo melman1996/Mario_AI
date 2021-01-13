@@ -95,8 +95,8 @@ if __name__ == '__main__':
                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
                         'config-feedforward')
     p = neat.Population(config)
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-55')
-    p.config = config
+    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-263')
+    # p.config = config
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(FileReporter())
     p.add_reporter(neat.Checkpointer(10))
