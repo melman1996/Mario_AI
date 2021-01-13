@@ -72,13 +72,19 @@ if __name__ == '__main__':
             test_reward = 0
             max_x = 0
             state = env.reset()
+            since_last_move = 0
             while True:
                 action = agent.replay(state)
 
                 state, reward, done, info = env.step(action)
                 test_reward += reward
+
                 if info['x_pos'] > max_x:
                     max_x = info['x_pos']
+                else:
+                    since_last_move += 1
+                    if since_last_move >= 250:
+                        done = True
 
                 if done or info['flag_get']:
                     break
