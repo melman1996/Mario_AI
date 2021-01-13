@@ -61,7 +61,6 @@ class Agent:
     def replay(self, state):
         state = np.reshape(state, (1, ) + self.env.observation_space.shape)
         prediction = self.target_model.predict(state)[0]
-        print(prediction)
         return np.argmax(prediction)
 
     def remember(self, experience):

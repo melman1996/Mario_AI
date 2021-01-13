@@ -14,18 +14,19 @@ if __name__ == '__main__':
     agent = Agent(env, max_memory=100000)
     
     episodes = 10000
-    rewards = []
 
     starting_episode = 0
     if starting_episode > 0:
         agent.load_model(starting_episode)
+
+    step = 0
+    start = time.time()
 
     for e in range(starting_episode, episodes):
         total_reward = 0
         iter = 0
 
         state = env.reset()
-        start = time.time()
         while True:
             # env.render()
 
@@ -46,23 +47,40 @@ if __name__ == '__main__':
             state = next_state
 
             iter += 1
+            step += 1
 
             if done or info['flag_get']:
                 break
 
-        rewards.append(total_reward/iter)
-        print('Episode {e} - '
-                'Frame {f} - '
-                'Frames/sec {fs} - '
-                'Epsilon {eps} - '
-                'Mean reward {r}'.format(
-                    e=e,
-                    f=iter,
-                    fs=iter/(time.time()-start),
-                    eps=agent.epsilon,
-                    r=total_reward
-                )
-        )
+        if e % 10 == 0:
+            print('Episode {e} - '
+                    'Frame {f} - '
+                    'Frames/sec {fs:.0f} - '
+                    'Epsilon {eps:.3f} '.format(
+                        e=e,
+                        f=step,
+                        fs=step/(time.time()-start),
+                        eps=agent.epsilon
+                    )
+            )
+            step = 0
+            start = time.time()
+
         if e % 100 == 0:
             agent.save_model(e)
+
+            test_reward = 0
+            max_x = 0
+            state = env.reset()
+            while True:
+                action = agent.replay(state)
+
+                state, reward, done, info = env.step(action)
+                test_reward += reward
+                if info['x_pos'] > max_x:
+                    max_x = info['x_pos']
+
+                if done or info['flag_get']:
+                    break
+            print("----------Model has been saved: distance {}, total reward {}----------".format(max_x, test_reward))
         
