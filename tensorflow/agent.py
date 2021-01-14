@@ -67,21 +67,24 @@ class Agent:
         self.memory.append(experience)
 
     def experience_reply(self):
-        if self.batch_size > len(self.memory) or len(self.memory) < self.burnin:
+        if self.batch_size > len(self.memory):
             return
         
         batch = random.sample(self.memory, self.batch_size)
         state, next_state, action, reward, done = map(np.array, zip(*batch))
 
-        q = self.model(state).numpy()
-        next_q = self.target_model(next_state).numpy()
+        target = self.model(state).numpy()
+        target_next = self.target_model(next_state)
 
-        a = np.argmax(q, axis=1)
-        target_q = reward + (1. - done) * self.gamma * next_q[np.arange(0, self.batch_size), a]
+        for i in range(self.batch_size):
+            if done[i]:
+                target[i][action[i]] = reward[i]
+            else:
+                target[i][action[i]] = reward[i] + self.gamma * (np.amax(target_next[i]))
         
         self.model.fit(
             np.array(state),
-            np.array(target_q),
+            np.array(target),
             batch_size = self.batch_size,
             verbose = 0
         )
