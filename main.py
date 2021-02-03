@@ -22,7 +22,8 @@ class FileReporter(neat.reporting.BaseReporter):
             counter = counter +1
             sum = sum + population[key].fitness
         with open("results.txt", "a") as file_object:  
-            file_object.write(" best genome: {0}, Best fitness: {1}, Mean {2}\n".format(best_genome.key,best_genome.fitness,sum/counter))
+            file_object.write(" best genome: {0}, Best fitness: {1}, Mean {2}\n"
+                              .format(best_genome.key,best_genome.fitness,sum/counter))
         
         
     def found_solution(self,config, generation, best):
@@ -45,24 +46,15 @@ class Worker(object):
         self.env = JoypadSpace(self.env, RIGHT_ONLY)        
         self.env.reset()        
         observation, _, _, _ = self.env.step(self.env.action_space.sample()) 
-        # inx = int(observation.shape[0]/8)
-        # iny = int(observation.shape[1]/8)
         done = False        
         net = neat.nn.FeedForwardNetwork.create(self.genome, self.config)        
         max_fitness = 0
         fitness = 0
-        xpos = 0
-        xpos_max = 0
         counter = 0    
         while not done:
-            # self.env.render()
-            observation = observation[self.y*8:self.y*8+self.h*8,self.x*8:self.x*8+self.w*8]       
-            # cv2.imshow('main', observation)
-
+            observation = observation[self.y*8:self.y*8+self.h*8,self.x*8:self.x*8+self.w*8]
             observation = cv2.resize(observation, (self.w, self.h))
-            # observation = cv2.resize(observation, (inx,iny))
             observation = cv2.cvtColor(observation, cv2.COLOR_BGR2GRAY)
-            # observation = cv2.resize(observation, (inx, iny))
             observation = cv2.resize(observation, (self.w, self.h))
 
             imgarray = np.ndarray.flatten(observation)
@@ -95,16 +87,12 @@ if __name__ == '__main__':
                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
                         'config-feedforward')
     p = neat.Population(config)
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-263')
-    # p.config = config
+    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-789')
     p.add_reporter(neat.StdOutReporter(True))
     p.add_reporter(FileReporter())
     p.add_reporter(neat.Checkpointer(10))
-
     pe = neat.ParallelEvaluator(4, eval_genomes)
-
     winner = p.run(pe.evaluate)
-
-    with open('winner.pkl', 'wb') as output:
+    with open('winner.pkl', 'wb') as output:        
         pickle.dump(winner, output, 1)
 
