@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from enum import Enum
 
 import pygame, random, math
 from pygame.locals import *
@@ -26,14 +27,20 @@ def speed_to_side(dx,dy):
         return 3
     else:
         return 0, 0
-    
+
+    # AIValues:  
+    # Player = -1,
+    # Background = 0,
+    # Collidable = 1,
+    # Monter = 2
 class Collidable(pygame.sprite.Sprite):
 
     def __init__(self, *groups):
         pygame.sprite.Sprite.__init__(self, groups)
         self.collision_groups = []
         self.xoffset = 0
-        self.yoffset = 1
+        self.yoffset = 1        
+        self.AIValue = 1
 
     def collide(self, group):
         if group not in self.collision_groups:
@@ -98,6 +105,7 @@ class Player(Collidable):
         self.hp = 1
         self.hit_timer = 3
         self.springing = False
+        self.AIValue = -1
 
     def kill(self):
         #pygame.mixer.music.stop()
@@ -285,8 +293,7 @@ class GrassSprite(Collidable):
         self.rect = self.image.get_rect(topleft = pos)
         self.on_left = False
         self.on_right = False
-        
-                
+                     
 class Spikes(Collidable):
     def __init__(self, pos):
         Collidable.__init__(self, self.groups)
@@ -450,7 +457,6 @@ class Chain(Collidable):
         self.rect = self.image.get_rect(topleft = pos)
         self.on_left = False
         self.on_right = False
-
 
 class Bush(Collidable):
      def __init__(self, pos):
@@ -692,7 +698,6 @@ class Stringer(Collidable):
         if self.life <= 0:
             self.kill()
 
-
 class Flower(Collidable):
     def __init__(self, pos, type="flower"):
         Collidable.__init__(self, self.groups)
@@ -717,7 +722,7 @@ class Flower(Collidable):
         self.frame += 1
         self.image = self.images[self.frame/4%2]
       
-# Flower up/down:
+    # Flower up/down:
 
     def update(self):
         if self.rect.centery > self.oldy-1:
@@ -768,7 +773,7 @@ class Flowertwo(Collidable):
         self.frame += 1
         self.image = self.images[self.frame/8%2]
               
-# Flowertwo up/down:
+    # Flowertwo up/down:
 
     def update(self):
         if self.rect.centery > self.oldy-1:
@@ -819,7 +824,7 @@ class Flowerthree(Collidable):
         self.frame += 1
         self.image = self.images[self.frame/8%2]
               
-# Flowerthree up/down:
+    # Flowerthree up/down:
 
     def update(self):
         if self.rect.centery > self.oldy-5:
@@ -846,8 +851,6 @@ class Flowerthree(Collidable):
                 if bottomright.right > sprite.rect.right:
                     self.speed = -1                    
 
-
-
 class Flowerblue(Collidable):
     def __init__(self, pos, type="flowerblue"):
         Collidable.__init__(self, self.groups)
@@ -872,7 +875,7 @@ class Flowerblue(Collidable):
         self.frame += 1
         self.image = self.images[self.frame/8%2]
               
-# Flowerblue up/down:
+    # Flowerblue up/down:
 
     def update(self):
         if self.rect.centery > self.oldy-1:
@@ -944,8 +947,7 @@ class Rose(Collidable):
                 bottomright.topleft = self.rect.bottomright
                 if bottomright.right > sprite.rect.right:
                     self.speed = -1
-
-                     
+                    
 class Baddie(Collidable):
     def __init__(self, pos, type="monster"):
         Collidable.__init__(self, self.groups)
@@ -1185,8 +1187,6 @@ class Fireball(Collidable):
         self.x += math.sin(math.radians(self.angle))*speed
         self.frame += 1
         self.image = self.images[int(self.frame/8)%2]
-
-
         
 class BaddieBoom(Collidable):        
     def __init__(self, pos, facing, type):

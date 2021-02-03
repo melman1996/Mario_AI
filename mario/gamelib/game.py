@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-import sys, os
+import sys
+import os
 import random
 
 import pygame
@@ -9,9 +10,12 @@ from pygame.locals import *
 from .data import *
 from .sprites import *
 from .level import *
+from array import *
+
 
 def RelRect(actor, camera):
     return Rect(actor.rect.x-camera.rect.x, actor.rect.y-camera.rect.y, actor.rect.w, actor.rect.h)
+
 
 class Camera(object):
     def __init__(self, player, width):
@@ -19,17 +23,18 @@ class Camera(object):
         self.rect = pygame.display.get_surface().get_rect()
         self.world = Rect(0, 0, width, 480)
         self.rect.center = self.player.rect.center
-        
+
     def update(self):
         if self.player.rect.centerx > self.rect.centerx+1:
             self.rect.centerx = self.player.rect.centerx-64
-            
+
         self.rect.clamp_ip(self.world)
 
     def draw_sprites(self, surf, sprites):
         for s in sprites:
             if s.rect.colliderect(self.rect):
                 surf.blit(s.image, RelRect(s, self))
+
 
 class Game(object):
 
@@ -38,7 +43,7 @@ class Game(object):
         self.sprites = pygame.sprite.OrderedUpdates()
         self.players = pygame.sprite.OrderedUpdates()
         self.platforms = pygame.sprite.OrderedUpdates()
-        self.platformblues = pygame.sprite.OrderedUpdates() 
+        self.platformblues = pygame.sprite.OrderedUpdates()
         self.grasss = pygame.sprite.OrderedUpdates()
         self.grays = pygame.sprite.OrderedUpdates()
         self.bricks = pygame.sprite.OrderedUpdates()
@@ -76,55 +81,88 @@ class Game(object):
         self.hill2 = pygame.sprite.OrderedUpdates()
         self.bush2 = pygame.sprite.OrderedUpdates()
         self.bush3 = pygame.sprite.OrderedUpdates()
-        
-        Player.right_images = [load_image("mario1.png"), load_image("mario2.png"), load_image("mario3.png"), load_image("mario4.png"), load_image("mario5.png")]
-        Platform.images = {"platform-top.png": load_image("platform-top.png"), "platform-middle.png": load_image("platform-top.png")}
-        Platformblue.images = {"platform-blue1.png": load_image("platform-blue1.png"), "platform-blue2.png": load_image("platform-blue1.png")}
-        Grass.images = {"grass-1.png": load_image("grass-1.png"), "grass-middle.png": load_image("grass-middle.png")}
-        Mountain.images = {"mountains1.png": load_image("mountains1.png"), "mountains2.png": load_image("mountains2.png")}
-        Gray.images = {"gray1.png": load_image("gray1.png"), "gray2.png": load_image("gray2.png")}
-        Brick.images = {"brick1.png": load_image("brick1.png"), "brick2.png": load_image("brick2.png")}
-        Brickblue.images = {"brickblue1.png": load_image("brickblue1.png"), "brickblue2.png": load_image("brickblue2.png")}
-        Bridge.images = {"bridge.png": load_image("bridge.png"), "bridge2.png": load_image("bridge2.png")}
+        self.Array = [[]]
+
+        Player.right_images = [load_image("mario1.png"), load_image("mario2.png"), load_image(
+            "mario3.png"), load_image("mario4.png"), load_image("mario5.png")]
+        Platform.images = {"platform-top.png": load_image(
+            "platform-top.png"), "platform-middle.png": load_image("platform-top.png")}
+        Platformblue.images = {"platform-blue1.png": load_image(
+            "platform-blue1.png"), "platform-blue2.png": load_image("platform-blue1.png")}
+        Grass.images = {
+            "grass-1.png": load_image("grass-1.png"), "grass-middle.png": load_image("grass-middle.png")}
+        Mountain.images = {"mountains1.png": load_image(
+            "mountains1.png"), "mountains2.png": load_image("mountains2.png")}
+        Gray.images = {"gray1.png": load_image(
+            "gray1.png"), "gray2.png": load_image("gray2.png")}
+        Brick.images = {"brick1.png": load_image(
+            "brick1.png"), "brick2.png": load_image("brick2.png")}
+        Brickblue.images = {"brickblue1.png": load_image(
+            "brickblue1.png"), "brickblue2.png": load_image("brickblue2.png")}
+        Bridge.images = {"bridge.png": load_image(
+            "bridge.png"), "bridge2.png": load_image("bridge2.png")}
         MovingPlatform.image = load_image("moving-platform.png")
-        Firebowser.images = [load_image("bowser-fireball%s.png" % i) for i in range(1, 3)]
+        Firebowser.images = [load_image(
+            "bowser-fireball%s.png" % i) for i in range(1, 3)]
         MovingPlatformtwo.image = load_image("moving-platformlong.png")
         Underground.image = load_image("moving-platformlong.png")
-        Baddie.left_images1 = [load_image("monster%d.png" % i) for i in range(1, 3)]
-        Baddie.left_images2 = [load_image("slub%d.png" % i) for i in range(1, 3)]
-        Baddie.left_images3 = [load_image("squidge%d.png" % i) for i in range(1, 3)]
-        Baddie.left_images4 = [load_image("monster-red%d.png" % i) for i in range(1, 3)]
-        Baddie.left_images5 = [load_image("slubblue%d.png" % i) for i in range(1, 3)]
-        Baddie.left_images6 = [load_image("bluemonster%d.png" % i) for i in range(1, 3)]
-        Baddie.left_images7 = [load_image("black%d.png" % i) for i in range(1, 3)]
-        Cannon.left_images1 = [load_image("cannon%d.png" % i) for i in range(1, 3)]
-        Cannon.left_images2 = [load_image("cannonbig%d.png" % i) for i in range(1, 3)]
-        Cannon.left_images4 = [load_image("smallcannon%d.png" % i) for i in range(1, 3)]
-        Spiker.left_images1 = [load_image("spiker%d.png" % i) for i in range(1, 3)]
+        Baddie.left_images1 = [load_image(
+            "monster%d.png" % i) for i in range(1, 3)]
+        Baddie.left_images2 = [load_image(
+            "slub%d.png" % i) for i in range(1, 3)]
+        Baddie.left_images3 = [load_image(
+            "squidge%d.png" % i) for i in range(1, 3)]
+        Baddie.left_images4 = [load_image(
+            "monster-red%d.png" % i) for i in range(1, 3)]
+        Baddie.left_images5 = [load_image(
+            "slubblue%d.png" % i) for i in range(1, 3)]
+        Baddie.left_images6 = [load_image(
+            "bluemonster%d.png" % i) for i in range(1, 3)]
+        Baddie.left_images7 = [load_image(
+            "black%d.png" % i) for i in range(1, 3)]
+        Cannon.left_images1 = [load_image(
+            "cannon%d.png" % i) for i in range(1, 3)]
+        Cannon.left_images2 = [load_image(
+            "cannonbig%d.png" % i) for i in range(1, 3)]
+        Cannon.left_images4 = [load_image(
+            "smallcannon%d.png" % i) for i in range(1, 3)]
+        Spiker.left_images1 = [load_image(
+            "spiker%d.png" % i) for i in range(1, 3)]
         Sky.left_images1 = [load_image("sky%d.png" % i) for i in range(1, 2)]
-        BaddieBoom.left_images1 = [load_image("monster2.png"), load_image("monster3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
-        BaddieBoom.left_images2 = [load_image("slub2.png"), load_image("slub3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
-        BaddieBoom.left_images3 = [load_image("squidge2.png"), load_image("squidge3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
-        BaddieBoom.left_images4 = [load_image("monster-red2.png"), load_image("monster-red3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
-        BaddieBoom.left_images5 = [load_image("slubblue2.png"), load_image("slubblue3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
-        BaddieBoom.left_images6 = [load_image("bluemonster2.png"), load_image("bluemonster3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
-        BaddieBoom.left_images7 = [load_image("black2.png"), load_image("black3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
+        BaddieBoom.left_images1 = [load_image("monster2.png"), load_image(
+            "monster3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
+        BaddieBoom.left_images2 = [load_image("slub2.png"), load_image(
+            "slub3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
+        BaddieBoom.left_images3 = [load_image("squidge2.png"), load_image(
+            "squidge3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
+        BaddieBoom.left_images4 = [load_image("monster-red2.png"), load_image(
+            "monster-red3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
+        BaddieBoom.left_images5 = [load_image("slubblue2.png"), load_image(
+            "slubblue3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
+        BaddieBoom.left_images6 = [load_image("bluemonster2.png"), load_image(
+            "bluemonster3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
+        BaddieBoom.left_images7 = [load_image("black2.png"), load_image(
+            "black3.png"), load_image("exp1.png"), load_image("exp2.png"), load_image("exp3.png")]
         Coin.images = [load_image("coin%s.png" % i) for i in range(1, 5)]
         CoinDie.images = [load_image("exp2-%d.png" % i) for i in range(1, 4)]
-        PlayerDie.right_images = [load_image("mariodie.png"), load_image("exp2-1.png"), load_image("exp2-2.png"), load_image("exp2-3.png")]
+        PlayerDie.right_images = [load_image("mariodie.png"), load_image(
+            "exp2-1.png"), load_image("exp2-2.png"), load_image("exp2-3.png")]
         Bomb.image = load_image("flagpole.png")
         Flag2.image = load_image("flagpole.png")
         Toad.image = load_image("toad.png")
         BaddieShot.image = load_image("shot.png")
-        SpikeShot.images = [load_image("spikeshot%s.png" % i) for i in range(1, 3)]
-        Fireball.images = [load_image("bowser-fireball%s.png" % i) for i in range(1, 3)]
+        SpikeShot.images = [load_image("spikeshot%s.png" % i)
+                            for i in range(1, 3)]
+        Fireball.images = [load_image(
+            "bowser-fireball%s.png" % i) for i in range(1, 3)]
         CannonShot.image = load_image("cannonbullet1.png")
         CannonShotbig.image = load_image("cannonbullet1.png")
         CannonShotsmall.image = load_image("cannonbullet1.png")
         Spring.images = [load_image("spring1.png"), load_image("spring2.png")]
         AirPlatform.image = load_image("platform-air.png")
         AirPlatformblue.image = load_image("platform-blue3.png")
-        PlatformQ.images = [load_image("platform-q%s.png" % i) for i in range (1, 4)]
+        PlatformQ.images = [load_image("platform-q%s.png" % i)
+                            for i in range(1, 4)]
         Pipe.image = load_image("pipe.png")
         Flag.image = load_image("flagpole.png")
         Castle.image = load_image("castle.png")
@@ -132,28 +170,34 @@ class Game(object):
         Hill.image = load_image("hill.png")
         Bush.image = load_image("bush-1.png")
         Bush2.image = load_image("bush-2.png")
-        Bush3.image = load_image ("bush-3.png")
+        Bush3.image = load_image("bush-3.png")
         Cloud.image = load_image("cloud.png")
         Cloud2.image = load_image("dobbelclouds.png")
         Platform_Brick.image = load_image("platform-brick.png")
-        Boss.left_images = [load_image("bowser1.png"), load_image("bowser2.png"), load_image("bowser3.png"), load_image("bowser4.png")]
-        Flower.left_images1 = [load_image("flower%d.png" % i) for i in range(1, 2)]
-        Flowertwo.left_images1 = [load_image("flower%d.png" % i) for i in range(1, 2)]
-        Flowerthree.left_images1 = [load_image("flower%d.png" % i) for i in range(1, 2)]
-        Flowerblue.left_images1 = [load_image("blueflower%d.png" % i) for i in range(1, 2)]
+        Boss.left_images = [load_image("bowser1.png"), load_image(
+            "bowser2.png"), load_image("bowser3.png"), load_image("bowser4.png")]
+        Flower.left_images1 = [load_image(
+            "flower%d.png" % i) for i in range(1, 2)]
+        Flowertwo.left_images1 = [load_image(
+            "flower%d.png" % i) for i in range(1, 2)]
+        Flowerthree.left_images1 = [load_image(
+            "flower%d.png" % i) for i in range(1, 2)]
+        Flowerblue.left_images1 = [load_image(
+            "blueflower%d.png" % i) for i in range(1, 2)]
         MushroomGreen.image = load_image("mushroom-green.png")
-        MushroomGreendie.images = [load_image("exp2-%d.png" % i) for i in range(1, 4)]
+        MushroomGreendie.images = [load_image(
+            "exp2-%d.png" % i) for i in range(1, 4)]
         Axe.image = load_image("trigger.png")
         AxeDie.images = [load_image("exp2-%d.png" % i) for i in range(1, 4)]
         PipeBig.image = load_image("pipe-big.png")
         Fence.image = load_image("fence.png")
         Tree1.image = load_image("tree-1.png")
         Tree2.image = load_image("tree-2.png")
-        Rose.image = load_image ("rose2.png")
+        Rose.image = load_image("rose2.png")
         Grasstexture.image = load_image("grass-texture.png")
         Grass1.image = load_image("grass-1.png")
         Grass2.image = load_image("grass-2.png")
-        GrassSprite.image = load_image("grass-texturesprite.png") 
+        GrassSprite.image = load_image("grass-texturesprite.png")
         Wall.image = load_image("wall-1.png")
         Lava.image = load_image("lava.png")
         Chain.image = load_image("chain.png")
@@ -240,16 +284,16 @@ class Game(object):
         Hill2.groups = self.sprites
         Bush2.groups = self.sprites
         Bush3.groups = self.sprites
-        
+
         self.score = 0
         self.coin = 0
-        self.lives = 3
-        self.lvl   = 1 #Edit what level to start at
+        self.lives = 1
+        self.lvl = 1  # Edit what level to start at
         if continuing:
             self.lvl = get_saved_level()
             self.coin = get_saved_coin()
             self.score = get_saved_score()
-            self.lives = get_saved_lives()  
+            self.lives = get_saved_lives()
         self.player = Player((0, 0))
         self.clock = pygame.time.Clock()
         self.bg = load_image("background-2.png")
@@ -265,54 +309,11 @@ class Game(object):
         self.booming = True
         self.boom_timer = 0
         self.music = "maintheme.ogg"
-        if self.lvl == 1:
-            self.intro_level() 
-        if self.lvl == 2:
-            self.intro_level()
-        if self.lvl == 3:
-            self.world1_2()
-        if self.lvl == 4:
-            self.world1_2()
-        if self.lvl == 5:
-            self.world1_3()
-        if self.lvl == 6:
-            self.world1_4()
-            if continuing:
-                self.music = "castle.ogg"
-                self.bg = load_image("background-1.png")
-        if self.lvl == 7:
-            self.world2_1()
-        if self.lvl == 8:
-            self.world2_2()
-        if self.lvl == 9:
-            self.time = 250
-            self.world2_3()        
-        if self.lvl == 10:
-            self.time = 250
-            self.world2_4()
-            if continuing:
-                self.bg = load_image("background-1.png")
-        if self.lvl == 11:
-            self.time = 250
-            self.world2_5()
-            if continuing:
-                self.bg = load_image("background-2.png")
-
         self.main_loop()
 
     def end(self):
         self.running = 0
-        
-    def intro_level(self):
-        self.screen.fill((0, 0, 0))
-        self.draw_stats()
-        ren = self.font.render("World 1-%d" % self.lvl, 1, (255, 255, 255))
-        self.screen.blit(ren, (320-ren.get_width()/2, 230))   
-        ren = self.font.render("Lives x%d" % self.lives, 1, (255, 255, 255))
-        self.screen.blit(ren, (320-ren.get_width()/2, 255))
-        pygame.display.flip()
-        pygame.time.wait(2500)
-                            
+
     def redo_level(self):
         self.booming = False
         self.boom_timer = 0
@@ -320,32 +321,33 @@ class Game(object):
         if self.running:
             self.clear_sprites()
             self.level = Level(self.lvl)
-            self.camera = Camera(self.player, self.level.get_size()[0]) 
+            self.camera = Camera(self.player, self.level.get_size()[0])
             self.draw_stats()
             Chain.image = load_image("chain.png")
             if self.lvl == 1:
-                self.player = Player((0, 430)) # Makes Player spawn at ground not mid-air.
+                # Makes Player spawn at ground not mid-air.
+                self.player = Player((0, 430))
                 self.camera = Camera(self.player, self.level.get_size()[0])
-             
+
     def show_death(self):
         ren = self.font.render("YOU DIED", 1, (255, 255, 255))
         self.screen.blit(ren, (320-ren.get_width()/2, 235))
         pygame.display.flip()
-        pygame.time.wait(2500)
-        
+        # pygame.time.wait(2500)
+
     def show_end(self):
-        pygame.time.wait(7500)
+        # pygame.time.wait(7500)
         pygame.display.flip()
-        
+
     def gameover_screen(self):
-        self.end()  
-      
+        self.end()
+
     def clear_sprites(self):
         for s in self.sprites:
             pygame.sprite.Sprite.kill(s)
 
     # MAIN PART:
-     
+
     def main_loop(self):
         while self.running:
             BaddieShot.player = self.player
@@ -354,6 +356,7 @@ class Game(object):
             CannonShotbig.player = self.player
             CannonShotsmall.player = self.player
             SpikeShot.player = self.player
+        # Check Running
             if not self.running:
                 return
 
@@ -363,7 +366,7 @@ class Game(object):
             self.camera.update()
             for s in self.sprites:
                 s.update()
-            
+
             if self.player.rect.right > self.camera.world.w:
                 if not self.toads and self.lvl < 30:
                     self.next_level()
@@ -372,11 +375,17 @@ class Game(object):
 
             if self.player.rect.right > self.camera.world.w:
                 self.next_level()
+        # Populate Array for AI
+            self.Array = [[0 for i in range(self.level.y+1)] for j in range(self.level.x+1)] 
+            self.Array[int(self.player.rect[0]/32)][int(self.player.rect[1]/32)+1] = self.player.AIValue
 
-            self.player.collide(self.platforms)
-            self.player.collide(self.springs)
+            self.AddToAIArray(self.bricks)
+            self.AddToAIArray(self.platforms)
+            self.AddToAIArray(self.baddies)
 
-            # PROJECTILES:
+            # print(self.Array) 
+
+        # PROJECTILES:
 
             for f in self.firebowsers:
                 if self.player.rect.colliderect(f.rect):
@@ -396,7 +405,7 @@ class Game(object):
                     if s.type == "sky":
                         if not random.randrange(130):
                             SpikeShot(s.rect.center)
-                
+
             for c in self.cannons:
                 c.update()
                 if c.rect.colliderect(self.camera.rect):
@@ -414,15 +423,15 @@ class Game(object):
                         c.collide(self.springs)
                         c.collide(self.cannons)
                     if c.type == "smallcannon":
-                         if not random.randrange(145):
+                        if not random.randrange(145):
                             CannonShotsmall(c.rect.center)
                     if c.type != "smallcannon":
                         c.collide(self.nomoveplatforms)
                         c.collide(self.springs)
                         c.collide(self.cannons)
 
-            # ENDING:
-            
+        # ENDING:
+
             for b in self.bombs:
                 if self.player.rect.colliderect(b.rect):
                     self.show_end()
@@ -432,49 +441,35 @@ class Game(object):
                 if self.player.rect.colliderect(f.rect):
                     self.show_end()
                     self.next_level()
-                        
+
             for t in self.toads:
                 if self.player.rect.colliderect(t.rect):
                     self.toad()
                     self.next_level()
                 if self.booming and self.boom_timer <= 0:
-                   self.redo_level()
+                    self.redo_level()
 
             for p in self.pipegreenends:
                 if self.player.rect.colliderect(p.rect):
                     self.next_level()
                 if self.booming and self.boom_timer <= 0:
-                   self.redo_level()
+                    self.redo_level()
 
             for p in self.pipeends:
                 if self.player.rect.colliderect(p.rect):
                     self.next_level()
                 if self.booming and self.boom_timer <= 0:
-                   self.redo_level()       
+                    self.redo_level()
 
-            # PLATFORMS:
-          
-            for p in self.platforms:
-                self.player.collide(self.springs)
-                self.player.collide(self.platforms)
-
-            for m in self.mountains:
-                self.player.collide(self.mountains)
-
-            for p in self.platformblues:
-                self.player.collide(self.platformblues)
-
-            for b in self.brickblues:
-                self.player.collide(self.brickblues)
-        
-            for g in self.grasss:
-                self.player.collide(self.grasss)    
-    
-            for b in self.bricks:
-                self.player.collide(self.bricks)    
-
-            for l in self.grays:
-                self.player.collide(self.grays)
+        # PLATFORMS:
+            self.player.collide(self.springs)
+            self.player.collide(self.platforms)
+            self.player.collide(self.mountains)
+            self.player.collide(self.platformblues)            
+            self.player.collide(self.brickblues)
+            self.player.collide(self.grasss)
+            self.player.collide(self.bricks) 
+            self.player.collide(self.grays)
 
             for p in self.movingplatformtwos:
                 p.collide(self.players)
@@ -492,8 +487,8 @@ class Game(object):
                 u.collide(self.players)
                 for u2 in self.platforms:
                     if u != u2:
-                        u.collide_with_platforms(u2)        
-        
+                        u.collide_with_platforms(u2)
+
             for m in self.mushroomgreens:
                 if self.player.rect.colliderect(m.rect):
                     m.kill()
@@ -501,7 +496,7 @@ class Game(object):
                     self.score += 5000
                     self.lives += 1
 
-            # WALK THROUGH:
+        # WALK THROUGH:
 
             for a in self.axes:
                 if self.player.rect.colliderect(a.rect):
@@ -515,8 +510,8 @@ class Game(object):
                 for b in self.bridges:
                     if self.player.rect.colliderect(a.rect):
                         b.kill()
-                        stop_music()     
-                                     
+                        stop_music()
+
             for c in self.coins:
                 if self.player.rect.colliderect(c.rect):
                     c.kill()
@@ -527,8 +522,8 @@ class Game(object):
                     self.coin -= self.coin
                     self.lives += 1
 
-            # BADDIES:
-          
+        # BADDIES:
+
             for b in self.baddies:
                 b.collide(self.nomoveplatforms)
                 b.collide(self.springs)
@@ -548,9 +543,9 @@ class Game(object):
                     else:
                         if b.alive():
                             self.player.hit()
-                            
-            # TIMER:
-                    
+
+        # TIMER:
+
             if self.player.alive():
                 self.time -= 0.060
             if self.time <= 0:
@@ -558,23 +553,24 @@ class Game(object):
             if self.time <= 100:
                 stop_music()
 
-            # EVENTS (KEYBINDINGS)
-                                              
+        # EVENTS (KEYBINDINGS)
+
             for e in pygame.event.get():
                 if e.type == QUIT:
-                    sys.exit()    
+                    sys.exit()
                 if e.type == KEYDOWN:
                     if e.key == K_ESCAPE:
-                        self.end()    
+                        self.end()
                     if e.key == K_z:
-                        self.player.jump()     
+                        self.player.jump()
             if not self.running:
                 return
-            self.screen.blit(self.bg, ((-self.camera.rect.x/1)%640, 0))
-            self.screen.blit(self.bg, ((-self.camera.rect.x/1)%640 + 640, 0))
-            self.screen.blit(self.bg, ((-self.camera.rect.x/1)%640 - 640, 0))
+            self.screen.blit(self.bg, ((-self.camera.rect.x/1) % 640, 0))
+            self.screen.blit(self.bg, ((-self.camera.rect.x/1) % 640 + 640, 0))
+            self.screen.blit(self.bg, ((-self.camera.rect.x/1) % 640 - 640, 0))
             self.camera.draw_sprites(self.screen, self.sprites)
             self.draw_stats()
+
             if not self.player.alive() and not self.playerdying:
                 if self.lives <= 0:
                     self.gameover_screen()
@@ -585,7 +581,7 @@ class Game(object):
             pygame.display.flip()
             if not self.running:
                 return
-
+    
     def draw_stats(self):
         for i in range(1):
             self.screen.blit(self.heart2, (16 + i*34, 16))
@@ -604,7 +600,8 @@ class Game(object):
         self.screen.blit(ren, (315+34, 24))
         ren = self.font.render("x%02d" % self.coin, 1, (255, 255, 255))
         self.screen.blit(ren, (300-ren.get_width(), 16))
-        ren = self.font.render("FPS    %d" % self.clock.get_fps(), 1, (255, 255, 255))
+        ren = self.font.render("FPS    %d" %
+                               self.clock.get_fps(), 1, (255, 255, 255))
         self.screen.blit(ren, (451, 16))
         ren1 = self.font.render("Time: %d" % self.time, 1, (255, 255, 255))
         ren2 = self.font.render("Time: %d" % self.time, 1, Color("#ffffff"))
@@ -613,3 +610,8 @@ class Game(object):
         if self.time <= 100:
             ren = self.font.render("GOTTA GO FAST", 1, (255, 255, 255))
             self.screen.blit(ren, (630-ren.get_width(), 60))
+
+
+    def AddToAIArray(self, list):
+        for o in list:
+            self.Array[int(o.rect[0]/32)][int(o.rect[1]/32)] = o.AIValue
